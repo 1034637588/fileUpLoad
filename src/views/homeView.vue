@@ -34,7 +34,7 @@
 <script lang="ts">
 import axios from "@/api";
 import { Notify } from "vant";
-import { defineComponent, PropType, reactive, ref, toRefs } from "vue";
+import { defineComponent, PropType, reactive, ref, toRefs, watch, watchEffect } from "vue";
 import { fileUpLoad, mergeFile, verifyFile } from "../api/fileAPI";
 import * as Types from "../Types/index";
 export default defineComponent({
@@ -45,6 +45,7 @@ export default defineComponent({
     const currentFile = ref<File>();
     const source = ref<any>();
     let partList: Types.Part[] | null = null;
+    const progressArr = ref<Map<number,number>>(new Map()); // 用来存放每个分块的进度
     const state = reactive({
       filename: "",
       totalSize: 0,
@@ -53,9 +54,10 @@ export default defineComponent({
       source,
       status: 0, // 0 初始化 1 上传中 2 停止
     });
+
     // 分片
     function createChunks(file: File): Types.Part[] {
-      const SIZE = 1024 * 1024 * 100; // 默认10M
+      const SIZE = 1024 * 1024 * 100; // 默认100M
       const { size, name, type } = file;
       let current = 0;
       let partLists: Types.Part[] = [];
@@ -113,18 +115,30 @@ export default defineComponent({
       const CancelToken = axios.CancelToken;
       state.source = CancelToken.source();
       return Promise.all(
-        partList.map((item) => {
+        partList.map((item,index) => {
           return fileUpLoad(
             item.chunk.slice(item.loaded),
             item.filename!,
             item.chunkname!,
             item.loaded!,
-            onProgress,
+            (progressEvent: any) => { // 处理进度条
+              progressArr.value.set(index,progressEvent.loaded);
+            },
             state.source
           );
         })
       );
     }
+   // 处理进度条
+    watch(progressArr,(newVal)=>{
+      let sum = 0;
+      let arr = Array.from(newVal);
+      sum = arr.reduce((pre,cur)=>{
+        return pre + cur[1];
+      },0);
+      sum += state.currentUploadSize;
+      state.progress = Number((sum / state.totalSize).toFixed(2)) * 100;
+    },{deep:true})
 
     // 上传
     async function upLoad() {
@@ -190,10 +204,10 @@ export default defineComponent({
       // 存储总大小
       state.totalSize = currentFile.value?.size!;
     }
+
     // 控制进度条
     function onProgress(progressEvent: any) {
-      state.progress =
-        Number((progressEvent.loaded / progressEvent.total).toFixed(2)) * 100;
+      state.progress = Number((progressEvent.loaded / progressEvent.total).toFixed(2)) * 100;
     }
 
     return {
