@@ -136,6 +136,7 @@ export default defineComponent({
       sum = arr.reduce((pre,cur)=>{
         return pre + cur[1];
       },0);
+      if(sum == 0) return;
       sum += state.currentUploadSize;
       state.progress = Number((sum / state.totalSize).toFixed(2)) * 100;
     },{deep:true})
@@ -176,6 +177,9 @@ export default defineComponent({
 
     // 点击暂停
     function clickPause() {
+      // 清空之前分片的进度
+      progressArr.value.clear();
+      
       state.status = 2;
       state.source.cancel("取消上传");
     }
