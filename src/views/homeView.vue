@@ -71,7 +71,7 @@ export default defineComponent({
     // 计算哈希 其实可以后端计算主要为了使用一下worker
     function calculateHash(partList: Types.Part[]) {
       return new Promise((resolve) => {
-        let worker = new Worker("http://localhost:8081/hash.js");
+        let worker = new Worker("http://localhost:8080/hash.js");
         worker.postMessage({ partList });
         worker.onmessage = (event) => {
           let { percent, hash } = event.data;
