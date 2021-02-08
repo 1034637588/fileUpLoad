@@ -172,7 +172,9 @@ export default defineComponent({
         state.status = 1;
         let data = await handleUpLoad(partList!);
         if (data) {
-          mergeFile(state.filename);
+          await mergeFile(state.filename);
+          state.status = 0;
+          Notify({ type: "primary", message: "上传成功！" });
         }
       } catch (error) {
         console.log(error);
