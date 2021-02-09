@@ -147,6 +147,10 @@ export default defineComponent({
         Notify({ type: "primary", message: "请选择文件" });
         return;
       }
+      // 进度条归零
+      progressArr.value.clear();
+      state.currentUploadSize = 0;
+      state.progress = 0;
       state.status = 1;
       // 分片
       partList = createChunks(currentFile.value!);
@@ -203,6 +207,9 @@ export default defineComponent({
     // 监听文件长传
     async function onChange(e: any) {
       state.status = 0;
+      // 进度条归零
+      progressArr.value.clear();
+      state.currentUploadSize = 0;
       state.progress = 0;
       currentFile.value = e.target.files[0];
       // 存储总大小
