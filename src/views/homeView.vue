@@ -129,18 +129,7 @@ export default defineComponent({
         })
       );
     }
-   // 处理进度条
-    watch(progressArr,(newVal)=>{
-      let sum = 0;
-      let arr = Array.from(newVal);
-      sum = arr.reduce((pre,cur)=>{
-        return pre + cur[1];
-      },0);
-      if(sum == 0) return;
-      sum += state.currentUploadSize;
-      state.progress = Number((sum / state.totalSize).toFixed(2)) * 100;
-    },{deep:true})
-
+  
     // 上传
     async function upLoad() {
       if (!currentFile.value) {
@@ -216,10 +205,18 @@ export default defineComponent({
       state.totalSize = currentFile.value?.size!;
     }
 
-    // 控制进度条
-    function onProgress(progressEvent: any) {
-      state.progress = Number((progressEvent.loaded / progressEvent.total).toFixed(2)) * 100;
-    }
+    // 处理进度条
+    watch(progressArr,(newVal)=>{
+      let sum = 0;
+      let arr = Array.from(newVal);
+      sum = arr.reduce((pre,cur)=>{
+        return pre + cur[1];
+      },0);
+      // 暂停后清空progressArr sum为0 所以如果是暂停 不做处理保持原来的progress
+      if(sum == 0) return;
+      sum += state.currentUploadSize;
+      state.progress = parseInt((sum / state.totalSize).toFixed(2)) * 100;
+    },{deep:true})
 
     return {
       onChange,
