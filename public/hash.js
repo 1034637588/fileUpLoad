@@ -11,8 +11,6 @@ self.onmessage = async (event) => {
             const reader = new FileReader();
             reader.readAsArrayBuffer(chunk);
             reader.onload = (readerEvent) => {
-                percent += perSize;
-                self.postMessage({ percent: Number(percent.toFixed(2)) });
                 resolve(readerEvent.target.result);
             }
         });

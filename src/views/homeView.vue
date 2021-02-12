@@ -76,7 +76,7 @@ export default defineComponent({
         let worker = new Worker("http://localhost:8080/hash.js");
         worker.postMessage({ partList });
         worker.onmessage = (event) => {
-          let { percent, hash } = event.data;
+          let { hash } = event.data;
           if (hash) {
             resolve(hash);
           }
@@ -215,7 +215,8 @@ export default defineComponent({
       // 暂停后清空progressArr sum为0 所以如果是暂停 不做处理保持原来的progress
       if(sum == 0) return;
       sum += state.currentUploadSize;
-      state.progress = parseInt((sum / state.totalSize).toFixed(2)) * 100;
+      state.progress = parseFloat((sum / state.totalSize).toFixed(2)) * 100;
+      state.progress = Number(state.progress.toFixed(0)); // 处理*100 以后的精度问题
     },{deep:true})
 
     return {
